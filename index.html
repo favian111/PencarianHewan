@@ -1,116 +1,184 @@
-<!DOCTYPE html>
+<!DOCTYPE1 html>
 <html lang="id">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pencarian Hewan</title>
+  <title>Pencarian Nama Hewan</title>
   <style>
+    /* 1. TAMPILAN (CSS) */
     body {
       font-family: Arial, sans-serif;
       background-color: #f4f6f9;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 40px 20px;
       margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
     }
 
     h1 {
-      color: #333;
-    }
-
-    input[type="text"] {
-      width: 100%;
-      max-width: 400px;
-      padding: 12px;
-      font-size: 16px;
-      border: 2px solid #ccc;
-      border-radius: 8px;
-      outline: none;
-      margin-bottom: 24px;
-    }
-
-    input[type="text"]:focus {
-      border-color: #4A90E2;
-    }
-
-    .animal-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      width: 100%;
-      max-width: 800px;
-    }
-
-    .animal-card {
-      background: #fff;
-      border-radius: 8px;
-      padding: 16px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       text-align: center;
-    }
-
-    .animal-card h3 {
-      margin: 0 0 8px 0;
       color: #2c3e50;
     }
 
-    .animal-card p {
-      margin: 0;
-      color: #666;
-      font-size: 14px;
+    /* Styling Kolom Pencarian */
+    .search-box {
+      width: 100%;
+      padding: 12px 20px;
+      font-size: 16px;
+      border: 2px solid #3498db;
+      border-radius: 8px;
+      box-sizing: border-box;
+      margin-bottom: 25px;
+      outline: none;
     }
 
-    .hidden {
-      display: none;
+    .search-box:focus {
+      border-color: #2980b9;
+      box-shadow: 0 0 8px rgba(52, 152, 219, 0.4);
+    }
+
+    /* Styling Container Kartu Hewan */
+    .animal-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    /* Styling Kartu Hewan */
+    .card {
+      background: #ffffff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease;
+      text-align: center;
+      padding: 15px;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .card img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    .card h3 {
+      margin: 12px 0 5px 0;
+      color: #333;
+    }
+
+    .card p {
+      margin: 0;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .no-result {
+      grid-column: 1 / -1;
+      text-align: center;
+      color: #888;
+      font-size: 18px;
     }
   </style>
 </head>
 <body>
 
-  <h1>Pencarian Hewan 🐾</h1>
-  <input type="text" id="searchInput" placeholder="Cari hewan (misal: Kucing, Elang)..." onkeyup="filterAnimals()">
+  <div class="container">
+    <h1>🔎 Cari Nama Hewan</h1>
+    
+    <!-- Input Kolom Pencarian -->
+    <input 
+      type="text" 
+      id="searchInput" 
+      class="search-box" 
+      placeholder="Ketik nama hewan (contoh: Kucing, Singa)..."
+      oninput="cariHewan()"
+    >
 
-  <div class="animal-grid" id="animalList">
-    <div class="animal-card">
-      <h3>Kucing</h3>
-      <p>Mamalia karnivora kecil yang sering dijadikan hewan peliharaan.</p>
-    </div>
-    <div class="animal-card">
-      <h3>Anjing</h3>
-      <p>Mamalia yang dikenal sangat setia dan cerdas.</p>
-    </div>
-    <div class="animal-card">
-      <h3>Elang</h3>
-      <p>Burung pemangsa besar dengan penglihatan yang sangat tajam.</p>
-    </div>
-    <div class="animal-card">
-      <h3>Harimau</h3>
-      <p>Kucing besar berkulit loreng yang merupakan pemangsa puncak.</p>
-    </div>
-    <div class="animal-card">
-      <h3>Lumba-lumba</h3>
-      <p>Mamalia laut yang sangat cerdas dan ramah.</p>
-    </div>
+    <!-- Wadah Kartu Hewan -->
+    <div id="animalGrid" class="animal-grid"></div>
   </div>
 
   <script>
-    function filterAnimals() {
-      const input = document.getElementById('searchInput').value.toLowerCase();
-      const cards = document.querySelectorAll('.animal-card');
+    // 2. DATA HEWAN (ARRAY OF OBJECTS)
+    const daftarHewan = [
+      {
+        nama: "Kucing",
+        jenis: "Mamalia",
+        gambar: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400"
+      },
+      {
+        nama: "Anjing",
+        jenis: "Mamalia",
+        gambar: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=400"
+      },
+      {
+        nama: "Singa",
+        jenis: "Karnivora",
+        gambar: "https://images.unsplash.com/photo-1534188753412-3e26d0d618d6?w=400"
+      },
+      {
+        nama: "Kelinci",
+        jenis: "Herbivora",
+        gambar: "https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=400"
+      },
+      {
+        nama: "Burung Elang",
+        jenis: "Aves",
+        gambar: "https://images.unsplash.com/photo-1611689342806-0863700ce1e4?w=400"
+      },
+      {
+        nama: "Gajah",
+        jenis: "Herbivora",
+        gambar: "https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?w=400"
+      }
+    ];
 
-      cards.forEach(card => {
-        const title = card.querySelector('h3').innerText.toLowerCase();
-        const description = card.querySelector('p').innerText.toLowerCase();
+    // 3. LOGIKA JAVASCRIPT
 
-        // Cek apakah nama atau deskripsi mengandung kata kunci pencarian
-        if (title.includes(input) || description.includes(input)) {
-          card.classList.remove('hidden');
-        } else {
-          card.classList.add('hidden');
-        }
+    // Fungsi untuk menampilkan daftar hewan ke halaman
+    function tampilkanHewan(data) {
+      const grid = document.getElementById("animalGrid");
+      grid.innerHTML = ""; // Bersihkan tampilan sebelum menampilkan hasil baru
+
+      if (data.length === 0) {
+        grid.innerHTML = `<p class="no-result">Hewan tidak ditemukan 😿</p>`;
+        return;
+      }
+
+      data.forEach(hewan => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <img src="${hewan.gambar}" alt="${hewan.nama}">
+          <h3>${hewan.nama}</h3>
+          <p>Kategori: ${hewan.jenis}</p>
+        `;
+        grid.appendChild(card);
       });
     }
+
+    // Fungsi utama pencarian (dijalankan tiap kali user mengetik)
+    function cariHewan() {
+      const kataKunci = document.getElementById("searchInput").value.toLowerCase();
+      
+      // Filter array hewan berdasarkan nama yang diinput
+      const hasilFilter = daftarHewan.filter(hewan => 
+        hewan.nama.toLowerCase().includes(kataKunci)
+      );
+
+      tampilkanHewan(hasilFilter);
+    }
+
+    // Tampilkan semua hewan saat halaman pertama kali dibuka
+    tampilkanHewan(daftarHewan);
   </script>
 
 </body>
